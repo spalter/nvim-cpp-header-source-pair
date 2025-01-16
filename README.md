@@ -13,8 +13,7 @@ require("lazy").setup({
                 open_header_sources = true, -- Enable pairing
                 fixed_order = true,         -- Headers on the left, sources on the right
             })
-        end,
-        event = { "BufReadPost" }, -- Load when reading files
+        end
     },
 })
 ```
