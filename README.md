@@ -11,13 +11,12 @@ require("lazy").setup({
         config = function()
             require("cpp_header_source_pair").setup({
                 open_header_sources = true, -- Enable pairing
-                fixed_order = true,         -- Always open headers on the left, sources on the right
+                fixed_order = true,         -- Headers on the left, sources on the right
             })
         end,
-        event = { "BufReadPost" }, -- Load the plugin only when reading a file
+        event = { "BufReadPost" }, -- Load when reading files
     },
 })
-
 ```
 
 ## License
