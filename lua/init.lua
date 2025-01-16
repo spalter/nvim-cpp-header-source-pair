@@ -5,14 +5,18 @@
 
 local M = {}
 
---- Whether the header-source pairing automation is enabled.
--- When `true`, the plugin will automatically open paired header and source files.
-M.open_header_sources = true
+--- Default configuration options.
+M.config = {
+	open_header_sources = true, -- Enable or disable header-source pairing.
+	fixed_order = true, -- Ensure headers are always on the left, sources on the right.
+}
 
---- Toggle for fixed ordering of header/source splits.
--- When `true`, headers will always appear on the left and sources on the right.
--- When `false`, files will open in the nearest available adjacent window, regardless of order.
-M.fixed_order = true
+--- Setup function for configuration.
+-- This function allows users to configure the plugin options.
+-- @param opts (table) Configuration options.
+function M.setup(opts)
+	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+end
 
 --- Checks if a file exists.
 -- @param name (string) The full path to the file.
@@ -105,7 +109,7 @@ end
 -- This is the main entry point for the plugin. It determines whether to open
 -- the files in fixed order or any order based on `M.fixed_order`.
 function M.handle_pairing()
-	if M.open_header_sources then
+	if M.config.open_header_sources then
 		local current_file = vim.fn.expand("%:p")
 		local is_header = current_file:match("%.h$") or current_file:match("%.hpp$")
 		local pair = ""
@@ -122,7 +126,7 @@ function M.handle_pairing()
 		local has_right = M.has_adjacent_window("l")
 
 		if pair and f_exists then
-			if M.fixed_order then
+			if M.config.fixed_order then
 				M.open_fixed_order(has_left, has_right, pair, is_header, current_file)
 			else
 				M.open_any_order(has_left, has_right, pair)
@@ -134,7 +138,9 @@ end
 --- Automatically handles header-source pairing when C/C++ files are opened.
 vim.api.nvim_create_autocmd("BufReadPost", {
 	pattern = { "*.h", "*.hpp", "*.c", "*.cpp" },
-	callback = M.handle_pairing,
+	callback = function()
+		M.handle_pairing()
+	end,
 })
 
 return M
