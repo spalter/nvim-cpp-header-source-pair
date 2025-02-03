@@ -109,28 +109,26 @@ end
 -- This is the main entry point for the plugin. It determines whether to open
 -- the files in fixed order or any order based on `M.fixed_order`.
 function M.handle_pairing()
-	if M.config.open_header_sources then
-		local current_file = vim.fn.expand("%:p")
-		local is_header = current_file:match("%.h$") or current_file:match("%.hpp$")
-		local pair = ""
+	local current_file = vim.fn.expand("%:p")
+	local is_header = current_file:match("%.h$") or current_file:match("%.hpp$")
+	local pair = ""
 
-		-- Determine the paired file
-		if is_header then
-			pair = current_file:gsub("%.h$", ".c"):gsub("%.hpp$", ".cpp")
+	-- Determine the paired file
+	if is_header then
+		pair = current_file:gsub("%.h$", ".c"):gsub("%.hpp$", ".cpp")
+	else
+		pair = current_file:gsub("%.c$", ".h"):gsub("%.cpp$", ".hpp")
+	end
+
+	local f_exists = M.file_exists(pair)
+	local has_left = M.has_adjacent_window("h")
+	local has_right = M.has_adjacent_window("l")
+
+	if pair and f_exists then
+		if M.config.fixed_order then
+			M.open_fixed_order(has_left, has_right, pair, is_header, current_file)
 		else
-			pair = current_file:gsub("%.c$", ".h"):gsub("%.cpp$", ".hpp")
-		end
-
-		local f_exists = M.file_exists(pair)
-		local has_left = M.has_adjacent_window("h")
-		local has_right = M.has_adjacent_window("l")
-
-		if pair and f_exists then
-			if M.config.fixed_order then
-				M.open_fixed_order(has_left, has_right, pair, is_header, current_file)
-			else
-				M.open_any_order(has_left, has_right, pair)
-			end
+			M.open_any_order(has_left, has_right, pair)
 		end
 	end
 end
@@ -139,7 +137,9 @@ end
 vim.api.nvim_create_autocmd("BufReadPost", {
 	pattern = { "*.h", "*.hpp", "*.c", "*.cpp" },
 	callback = function()
-		M.handle_pairing()
+		if M.config.open_header_sources then
+			M.handle_pairing()
+		end
 	end,
 })
 
