@@ -143,4 +143,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 	end,
 })
 
+-- Command to manually handle header-source pairing
+vim.api.nvim_create_user_command("PairHeaderSource", M.handle_pairing, {})
+
 return M
